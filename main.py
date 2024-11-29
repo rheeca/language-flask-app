@@ -4,7 +4,7 @@ import io
 import numpy as np
 import os
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from google.cloud import storage, vision
 from PIL import Image
 from typing import Sequence
@@ -96,6 +96,20 @@ def show_image():
 @app.route("/study", methods=['GET', 'POST'])
 def study():
     return render_template('study.html', title='Study')
+
+@app.route("/translate", methods=['POST'])
+def translate():
+    from google.cloud import translate_v2 as translate
+
+    translate_client = translate.Client()
+
+    word = request.json.get('word')
+    if isinstance(word, bytes):
+        word = word.decode("utf-8")
+
+    result = translate_client.translate(word) # Defaults to English
+
+    return jsonify({'result': result["translatedText"]})
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8080, debug=True)

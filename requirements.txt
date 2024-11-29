@@ -1,5 +1,6 @@
 flask~=3.0.3
 google-cloud-storage
+google-cloud-translate
 google-cloud-vision
 numpy
 opencv-python

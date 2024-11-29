@@ -29,6 +29,14 @@ h6 {
   font-weight: 500;
 }
 
+.word-section {
+  background: #ffffff;
+  padding: 10px 20px;
+  border: 1px solid #dddddd;
+  border-radius: 3px;
+  margin-bottom: 20px;
+}
+
 .custom-file-button input[type=file] {
   margin-left: -2px !important;
 }
