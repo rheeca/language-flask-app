@@ -2,3 +2,4 @@ venv/
 .gcloudignore
 .DS_Store
 .env
+constants.py

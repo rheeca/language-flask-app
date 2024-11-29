@@ -3,6 +3,7 @@ import cv2
 import io
 import numpy as np
 import os
+import random
 
 from flask import Flask, render_template, request, jsonify
 from google.cloud import storage, vision
@@ -10,46 +11,10 @@ from PIL import Image
 from typing import Sequence
 
 BUCKET_NAME = os.getenv('BUCKET_NAME')
+SAVED_WORDS = []
 
 
 app = Flask(__name__)
-
-def analyze_image_from_local(
-    image_bytes: bytes,
-    feature_types: Sequence,
-) -> vision.AnnotateImageResponse:
-    client = vision.ImageAnnotatorClient()
-
-    image = vision.Image(content=image_bytes)
-    features = [vision.Feature(type_=feature_type) for feature_type in feature_types]
-    request = vision.AnnotateImageRequest(image=image, features=features)
-
-    response = client.annotate_image(request=request)
-
-    return response
-
-def print_text(response: vision.AnnotateImageResponse):
-    print("=" * 80)
-    for annotation in response.text_annotations:
-        vertices = [f"({v.x},{v.y})" for v in annotation.bounding_poly.vertices]
-        print(
-            f"{repr(annotation.description):42}",
-            ",".join(vertices),
-            sep=" | ",
-        )
-
-def draw_bounding_box(image_bytes, objects):
-    # Draw bounding box on image
-    nparr = np.frombuffer(image_bytes, np.uint8)
-    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-    for o in objects:
-        vertices = o.bounding_poly.vertices
-        cv2.rectangle(image, (vertices[0].x, vertices[0].y), (vertices[2].x, vertices[2].y), (0, 255, 0), 2) 
-
-    _, encoded_image = cv2.imencode('.jpg', image)
-    return encoded_image.tobytes()
-
 
 @app.route("/", methods=['GET', 'POST'])
 def root():
@@ -95,7 +60,8 @@ def show_image():
 
 @app.route("/study", methods=['GET', 'POST'])
 def study():
-    return render_template('study.html', title='Study')
+    card_order = generate_random(len(SAVED_WORDS))
+    return render_template('study.html', title='Study', words=SAVED_WORDS, card_order=card_order)
 
 @app.route("/translate", methods=['POST'])
 def translate():
@@ -110,6 +76,45 @@ def translate():
     result = translate_client.translate(word) # Defaults to English
 
     return jsonify({'result': result["translatedText"]})
+
+@app.route("/add", methods=['POST'])
+def add_word():
+    word = request.json.get('word')
+    translation = request.json.get('translation')
+    SAVED_WORDS.append({'word': word, 'translation': translation})
+
+    return jsonify({'result': 'OK'})
+
+def generate_random(n):
+    numbers = list(range(0, n))
+    random.shuffle(numbers)
+    return numbers
+
+def analyze_image_from_local(
+    image_bytes: bytes,
+    feature_types: Sequence,
+) -> vision.AnnotateImageResponse:
+    client = vision.ImageAnnotatorClient()
+
+    image = vision.Image(content=image_bytes)
+    features = [vision.Feature(type_=feature_type) for feature_type in feature_types]
+    request = vision.AnnotateImageRequest(image=image, features=features)
+
+    response = client.annotate_image(request=request)
+
+    return response
+
+def draw_bounding_box(image_bytes, objects):
+    # Draw bounding box on image
+    nparr = np.frombuffer(image_bytes, np.uint8)
+    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    for o in objects:
+        vertices = o.bounding_poly.vertices
+        cv2.rectangle(image, (vertices[0].x, vertices[0].y), (vertices[2].x, vertices[2].y), (0, 255, 0), 2) 
+
+    _, encoded_image = cv2.imencode('.jpg', image)
+    return encoded_image.tobytes()
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8080, debug=True)

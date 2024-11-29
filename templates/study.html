@@ -1,4 +1,43 @@
 {% extends "layout.html" %}
 {% block content %}
+
 <h1>Study</h1>
+<div class="study-card">
+    <p id="study-word" class="study-word"></p>
+    <p id="translation" class="d-flex justify-content-center"></p>
+</div>
+<button onclick="handleShowAnswer(event)" class="btn btn-outline-info">Show Answer</button>
+
+<script>
+    let index = 0;
+    const studyWords = {{ words | tojson | safe }};
+    const cardOrder = {{ card_order | tojson | safe }};
+    document.getElementById("study-word").innerHTML = studyWords[cardOrder[index]].word;
+
+    function handleShowAnswer(event) {
+        document.getElementById("translation").innerHTML = studyWords[cardOrder[index]].translation;
+
+        const button = event.target;
+        button.innerText = "Next";
+        button.setAttribute("onclick", `handleNext(event)`);
+    }
+
+    function handleNext(event) {
+        const button = event.target;
+
+        index++;
+        if (index >= cardOrder.length) {
+            button.innerHTML = 'Completed <i class="bi bi-check-circle"></i>';
+            button.disabled = true;
+            return;
+        }
+
+        document.getElementById("study-word").innerHTML = studyWords[cardOrder[index]].word;
+        document.getElementById("translation").innerHTML = "";
+
+        button.innerText = "Show Answer";
+        button.setAttribute("onclick", `handleShowAnswer(event)`);
+    }
+</script>
+
 {% endblock content %}

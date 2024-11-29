@@ -31,14 +31,25 @@
         const data = await response.json();
         document.getElementById(`translation-${index}`).innerHTML = data.result;
 
-        // Replace Translate button with Save button after translation
+        // Replace Translate button with Add button after translation
         const button = event.target;
         button.innerText = "Add";
-        button.setAttribute("onclick", `handleAdd('${index}', '${word}', '${data.result}')`);
+        button.setAttribute("onclick", `handleAdd(event, '${index}', '${word}', '${data.result}')`);
     }
 
-    async function handleAdd(index, word, translation) {
-        alert(`Saving translation for "${word}": "${translation}"`);
+    async function handleAdd(event, index, word, translation) {
+        const response = await fetch("/add", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ word: word, translation: translation })
+        });
+
+        // Disable Add button after adding
+        const button = event.target;
+        button.innerHTML = 'Added <i class="bi bi-check-circle-fill"></i>';
+        button.disabled = true;
     }
 </script>
 {% endblock content %}
