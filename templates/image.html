@@ -1,18 +1,21 @@
-<!DOCTYPE html>
-
-<html lang="en">
-
-<head>
-    <title>Process Image</title>
-</head>
-
-<body>
-    <form action="/">
-        <input type="submit" value="Choose another image">
-    </form>
-    <br />
-    <img src="data:image/jpeg;base64,{{image}}" style="width:700px">
-
-</body>
-
-</html>
+{% extends "layout.html" %}
+{% block content %}
+<form action="/">
+    <input type="submit" value="Choose another image">
+</form>
+<br />
+{% for word, val in words.items() %}
+<div>
+    <p>{{ word }}</p>
+    <p id="translation-{{ loop.index }}"></p>
+    <button onclick="handleButtonClick('{{ loop.index }}')">Translate</button>
+</div>
+{% endfor %}
+<br />
+<img src="data:image/jpeg;base64,{{image}}" style="width:700px">
+<script>
+    async function handleButtonClick(index) {
+        document.getElementById(`translation-${index}`).innerText = 'Test';
+    }
+</script>
+{% endblock content %}

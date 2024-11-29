@@ -1,16 +1,11 @@
-<!DOCTYPE html>
-
-<html lang="en">
-
-<head>
-    <title>Process Image</title>
-</head>
-
-<body>
-    <form action="/image" method="post" enctype="multipart/form-data">
-        <input type="file" name="image-file" />
-        <input type="submit" value="Upload">
-    </form>
-</body>
-
-</html>
+{% extends "layout.html" %}
+{% block content %}
+<form action="/image" method="post" enctype="multipart/form-data">
+    <div class="input-group custom-file-button">
+        <label class="input-group-text" for="inputGroupFile">Choose Image</label>
+        <input type="file" class="form-control" id="inputGroupFile" name="image-file">
+    </div>
+    <br />
+    <input type="submit" value="Upload" class="btn btn-outline-info" />
+</form>
+{% endblock content %}
