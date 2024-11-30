@@ -2,8 +2,10 @@
 {% block content %}
 <h1>Image Library</h1>
 {% for image in images %}
-<div class="d-flex justify-content-center">
-    <img src="data:image/jpeg;base64,{{image}}" style="width:700px">
+<div class="scrollable-area">
+    <div class="d-flex justify-content-center">
+        <img src="data:image/jpeg;base64,{{image}}" style="width:700px">
+    </div>
 </div>
 {% endfor %}
 

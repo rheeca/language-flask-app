@@ -17,7 +17,7 @@
     {% if title %}
     <title>{{ title }}</title>
     {% else %}
-    <title>Translation App</title>
+    <title>Language App</title>
     {% endif %}
 </head>
 
@@ -25,7 +25,7 @@
     <header class="site-header">
         <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
             <div class="container">
-                <a class="navbar-brand mr-4" href="/">Translation App</a>
+                <a class="navbar-brand mr-4" href="/">Language App</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle"
                     aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -41,11 +41,7 @@
         </nav>
     </header>
     <main role="main" class="container">
-        <div class="row">
-            <div class="col-md-8">
-                {% block content %}{% endblock %}
-            </div>
-        </div>
+        {% block content %}{% endblock %}
     </main>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"

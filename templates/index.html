@@ -1,13 +1,15 @@
 {% extends "layout.html" %}
 {% block content %}
-<form action="/image" method="post" enctype="multipart/form-data">
-    <div class="input-group custom-file-button">
-        <label class="input-group-text" for="inputGroupFile">Choose Image</label>
-        <input type="file" class="form-control" id="inputGroupFile" name="image-file">
-    </div>
-    <br />
-    <div class="d-flex justify-content-end">
-        <input type="submit" value="Upload" class="btn btn-info" />
-    </div>
-</form>
+<div class="main-area">
+    <form action="/image" method="post" enctype="multipart/form-data">
+        <div class="input-group custom-file-button">
+            <label class="input-group-text" for="inputGroupFile">Choose Image</label>
+            <input type="file" class="form-control" id="inputGroupFile" name="image-file">
+        </div>
+        <br />
+        <div class="d-flex justify-content-end">
+            <input type="submit" value="Upload" class="btn btn-info" />
+        </div>
+    </form>
+</div>
 {% endblock content %}

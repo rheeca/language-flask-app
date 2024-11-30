@@ -1,26 +1,34 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="d-flex justify-content-between">
-    <form action="/">
-        <input type="submit" value="Choose another image" class="btn btn-outline-secondary">
-    </form>
-    <button onclick="handleSave(event)" class="btn btn-info">Save Words</button>
-</div>
-<br />
+<div class="row">
+    <div class="col-md-6">
+        <div class="d-flex justify-content-between">
+            <form action="/">
+                <input type="submit" value="Choose another image" class="btn btn-outline-secondary">
+            </form>
+            <button onclick="handleSave(event)" class="btn btn-info">Save Words</button>
+        </div>
+        <br />
 
-{% for word, val in words.items() %}
-<div class="word-section">
-    <p>{{ word }}</p>
-    <p id="translation-{{ loop.index }}"></p>
-    <button onclick="handleTranslate(event, '{{ loop.index }}', '{{ word }}')"
-        class="btn btn-outline-info">Translate</button>
+        <div class="scrollable-area">
+            {% for word, val in words.items() %}
+            <div class="word-section">
+                <p>{{ word }}</p>
+                <p id="translation-{{ loop.index }}"></p>
+                <button onclick="handleTranslate(event, '{{ loop.index }}', '{{ word }}')"
+                    class="btn btn-outline-info">Translate</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="image-display">
+            {% if image %}
+            <img src="data:image/jpeg;base64,{{image}}" class="img-fluid">
+            {% endif %}
+        </div>
+    </div>
 </div>
-{% endfor %}
-<br />
-
-{% if image %}
-<img src="data:image/jpeg;base64,{{image}}" style="width:700px">
-{% endif %}
 
 <div class="modal fade" id="wordsSavedModal" tabindex="-1" role="dialog" aria-labelledby="wordsSavedModalLabel"
     aria-hidden="true">
