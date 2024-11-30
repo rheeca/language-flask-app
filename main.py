@@ -63,8 +63,29 @@ def show_image():
 
 @app.route("/study", methods=['GET', 'POST'])
 def study():
-    card_order = generate_random(len(SAVED_WORDS))
-    return render_template('study.html', title='Study', words=SAVED_WORDS, card_order=card_order)
+    from sqlalchemy import (Table, MetaData, Column, String, select)
+    global ENGINE
+
+    if ENGINE is None:
+        ENGINE = connect_with_connector()
+
+    metadata = MetaData()
+    table = Table(
+        os.getenv('TABLE_NAME'), metadata, 
+        Column('word', String(), primary_key = True), 
+        Column('translation', String()),
+    )
+    metadata.create_all(ENGINE)
+
+    words = []
+    with ENGINE.connect() as conn:
+        stmt = select(table)
+        result = conn.execute(stmt)
+        for word, translation in result:
+            words.append({'word': word, 'translation': translation})
+
+    card_order = generate_random(len(words))
+    return render_template('study.html', title='Study', words=words, card_order=card_order)
 
 @app.route("/translate", methods=['POST'])
 def translate():
