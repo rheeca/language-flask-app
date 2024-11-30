@@ -5,13 +5,17 @@ import numpy as np
 import os
 import random
 
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify
 from google.cloud import storage, vision
 from PIL import Image
 from typing import Sequence
 from uuid import uuid4
 
+load_dotenv()
+
 BUCKET_NAME = os.getenv('BUCKET_NAME')
+ENGINE = None
 USER = 'alice'
 SAVED_WORDS = []
 
@@ -84,6 +88,32 @@ def add_word():
 
     return jsonify({'result': 'OK'})
 
+@app.route("/save", methods=['GET'])
+def save_words():
+    from sqlalchemy import (Table, MetaData, Column, String, insert)
+    global ENGINE, SAVED_WORDS
+
+    if ENGINE is None:
+        ENGINE = connect_with_connector()
+
+    # Insert saved words into database
+    metadata = MetaData()
+    table = Table(
+        os.getenv('TABLE_NAME'), metadata, 
+        Column('word', String(), primary_key = True), 
+        Column('translation', String()),
+    )
+    metadata.create_all(ENGINE)
+        
+    with ENGINE.connect() as conn:
+        conn.execute(insert(table), SAVED_WORDS)
+        conn.commit()
+
+    # Clear words to save
+    SAVED_WORDS = []
+
+    return jsonify({'result': 'OK'})
+
 @app.route("/library", methods=['GET'])
 def show_library():
     images = []
@@ -139,6 +169,46 @@ def draw_bounding_box(image_bytes, objects):
 
     _, encoded_image = cv2.imencode('.jpg', image)
     return encoded_image.tobytes()
+
+def connect_with_connector():
+    import pymysql
+    import sqlalchemy
+    from google.cloud.sql.connector import Connector, IPTypes
+
+    DB_HOST = os.getenv('DB_HOST')
+    DB_USER = os.getenv('DB_USER')
+    DB_PASS = os.getenv('DB_PASS')
+    DB_NAME = os.getenv('DB_NAME')
+    DB_PORT = os.getenv('DB_PORT')
+    CONNECTION_NAME =os.getenv('CONNECTION_NAME')
+
+    ip_type = IPTypes.PUBLIC
+    connector = Connector(ip_type)
+
+    def getconn() -> pymysql.connections.Connection:
+        conn: pymysql.connections.Connection = connector.connect(
+            CONNECTION_NAME,
+            "pymysql",
+            user=DB_USER,
+            password=DB_PASS,
+            db=DB_NAME,
+        )
+        return conn
+
+    engine = sqlalchemy.create_engine(
+        sqlalchemy.engine.url.URL.create(
+            drivername="mysql+pymysql",
+            username=DB_USER,
+            password=DB_PASS,
+            host=DB_HOST,
+            port=DB_PORT,
+            database=DB_NAME,
+        ),
+        creator=getconn,
+        echo=True,
+    )
+    
+    return engine
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8080, debug=True)

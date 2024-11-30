@@ -4,7 +4,7 @@
     <form action="/">
         <input type="submit" value="Choose another image" class="btn btn-outline-secondary">
     </form>
-    <button onclick="" class="btn btn-info">Save Words</button>
+    <button onclick="handleSave(event)" class="btn btn-info">Save Words</button>
 </div>
 <br />
 
@@ -17,7 +17,28 @@
 </div>
 {% endfor %}
 <br />
+
+{% if image %}
 <img src="data:image/jpeg;base64,{{image}}" style="width:700px">
+{% endif %}
+
+<div class="modal fade" id="wordsSavedModal" tabindex="-1" role="dialog" aria-labelledby="wordsSavedModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="wordsSavedModalLabel">New words saved!</h5>
+            </div>
+            <div class="modal-body">
+                You can now review them in the Study tab.
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="handleFinishSave(event)" class="btn btn-info">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     async function handleTranslate(event, index, word) {
         const response = await fetch("/translate", {
@@ -50,6 +71,24 @@
         const button = event.target;
         button.innerHTML = 'Added <i class="bi bi-check-circle-fill"></i>';
         button.disabled = true;
+    }
+
+    async function handleSave(event) {
+        const response = await fetch("/save", {
+            method: "GET"
+        });
+
+        var modal = document.getElementById('wordsSavedModal');
+        modal.classList.toggle('show');
+        modal.style.display = modal.classList.contains('show') ? 'block' : 'none';
+    }
+
+    async function handleFinishSave(event) {
+        var modal = document.getElementById('wordsSavedModal');
+        modal.classList.toggle('show');
+        modal.style.display = modal.classList.contains('show') ? 'block' : 'none';
+
+        window.location.href = '/'
     }
 </script>
 {% endblock content %}
