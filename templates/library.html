@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Image Library</h1>
+{% for image in images %}
+<div class="d-flex justify-content-center">
+    <img src="data:image/jpeg;base64,{{image}}" style="width:700px">
+</div>
+{% endfor %}
+
+{% endblock content %}

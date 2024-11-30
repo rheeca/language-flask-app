@@ -9,8 +9,10 @@ from flask import Flask, render_template, request, jsonify
 from google.cloud import storage, vision
 from PIL import Image
 from typing import Sequence
+from uuid import uuid4
 
 BUCKET_NAME = os.getenv('BUCKET_NAME')
+USER = 'alice'
 SAVED_WORDS = []
 
 
@@ -28,12 +30,13 @@ def show_image():
         image_bytes = f.read()
 
         # Connect to Cloud Storage
-        # storage_client = storage.Client()
-        # bucket = storage_client.bucket(BUCKET_NAME)
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(BUCKET_NAME)
 
-        # Download image from Cloud Storage
-        # blob = bucket.blob("test3.jpg")
-        # blob.download_to_filename(temp_filename)
+        # Upload image to Cloud Storage
+        filename = str(uuid4())
+        blob = bucket.blob(os.path.join(USER, filename))
+        blob.upload_from_string(image_bytes, content_type='image/jpeg')
 
         # Vision processing
         response = analyze_image_from_local(image_bytes=image_bytes, feature_types=[vision.Feature.Type.TEXT_DETECTION])
@@ -43,10 +46,6 @@ def show_image():
         annotations = response.text_annotations[1:]
         for v in annotations:
             words[v.description] = {'translation': None}
-        
-        # Upload result to Cloud Storage
-        # blob = bucket.blob(f.filename)
-        # blob.upload_from_string(result_bytes, content_type='image/jpeg')
 
         # Save image as in-memory file
         img = Image.open(io.BytesIO(result_bytes))
@@ -84,6 +83,31 @@ def add_word():
     SAVED_WORDS.append({'word': word, 'translation': translation})
 
     return jsonify({'result': 'OK'})
+
+@app.route("/library", methods=['GET'])
+def show_library():
+    images = []
+
+    # Connect to Cloud Storage
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(BUCKET_NAME)
+
+    # Download images from Cloud Storage
+    blobs = bucket.list_blobs(prefix=f'{USER}/')
+    for blob in blobs:
+        if blob.name.endswith("/"):
+            continue
+
+        image_bytes = blob.download_as_bytes()
+
+        # Save image as in-memory file
+        img = Image.open(io.BytesIO(image_bytes))
+        buffer = io.BytesIO()
+        img.save(buffer, 'JPEG')
+        encoded_img_data = base64.b64encode(buffer.getvalue())
+        images.append(encoded_img_data.decode('utf-8'))
+
+    return render_template('library.html', images=images)
 
 def generate_random(n):
     numbers = list(range(0, n))
